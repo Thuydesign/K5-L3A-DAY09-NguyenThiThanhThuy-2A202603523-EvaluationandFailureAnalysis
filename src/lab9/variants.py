@@ -12,6 +12,9 @@ Registered into lab8.shapes.SHAPES at run time; no Lab 8 file is edited.
 """
 from __future__ import annotations
 
+from collections.abc import Iterator
+from contextlib import contextmanager
+
 from lab9.variant_agent import make_shape
 
 VARIANTS = {
@@ -28,3 +31,17 @@ def register() -> list[str]:
     for name, bugs in VARIANTS.items():
         SHAPES.setdefault(name, make_shape(name, bugs))
     return list(VARIANTS)
+
+
+@contextmanager
+def registered() -> Iterator[None]:
+    from lab8.shapes import SHAPES
+
+    before = set(SHAPES)
+    register()
+    try:
+        yield
+    finally:
+        for name in VARIANTS:
+            if name not in before:
+                SHAPES.pop(name, None)

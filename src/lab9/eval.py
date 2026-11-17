@@ -89,10 +89,11 @@ def run_eval(shape: str, spec: dict[str, Any], seeds: list[int] | None = None) -
              for it in items for s in seeds]
     dataset = Dataset(name=f"logix-{spec['eval_set_version']}", cases=cases,
                       evaluators=[GRADERS[m]() for m in metric_ids])
-    with tempfile.TemporaryDirectory(prefix="lab9-eval-", ignore_cleanup_errors=True) as tmp:
-        # max_concurrency=1: shapes write traces/ and SQLite; keep runs deterministic.
-        report = dataset.evaluate_sync(make_task(shape, world, claims, labels, Path(tmp)),
-                                       max_concurrency=1, progress=False)
+    with variants.registered():
+        with tempfile.TemporaryDirectory(prefix="lab9-eval-", ignore_cleanup_errors=True) as tmp:
+            # max_concurrency=1: shapes write traces/ and SQLite; keep runs deterministic.
+            report = dataset.evaluate_sync(make_task(shape, world, claims, labels, Path(tmp)),
+                                           max_concurrency=1, progress=False)
     rows = []
     for c in report.cases:
         scores = {}
@@ -163,7 +164,6 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--seeds", help="comma-separated seeds overriding the spec (A/A noise check)")
     args = ap.parse_args(argv)
     spec = load_spec(Path(args.spec))
-    variants.register()
     seeds = [int(x) for x in args.seeds.split(",")] if args.seeds else None
     rep = run_eval(args.shape, spec, seeds)
     out = Path(args.out or f"reports/eval_{args.shape}.json")

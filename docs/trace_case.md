@@ -10,18 +10,18 @@ python -m lab9.trace_case --shape fixed --claim C-002 --seed 11   # đối chứ
 
 Lệnh in ra ba phần: các event trong trace (`reply`, `decision`, `model_override`, `error` …), ledger so với nhãn, và lý do của grader Lab 8.
 
-## Mẫu điền (mỗi bạn 1 case, lấy từ trial đang fail trong report)
+## Case đã phân tích
 
 | Trường | Nội dung |
 |---|---|
-| Trial | `<shape> <claim>@<seed>`, run ID trong report |
-| Triệu chứng | Grader nào fail; reply nói gì so với ledger ghi gì |
-| Bước sai đầu tiên | Số thứ tự event + kind + trích payload (≤1 dòng) |
-| Vì sao là bước *đầu tiên* | Các bước trước đó đúng ra sao (dẫn số event) |
-| Failure mode | Mã FM-xx trong `docs/failure_taxonomy.md` |
-| Đối chứng | Cùng claim@seed trên shape `fixed`: bước đó khác thế nào |
-| Regression test | Tên test + grader/assert nào bắt được; đã thấy fail trên variant lỗi và pass trên `fixed` chưa |
-| Chưa chắc chắn | Điều trace không chứng minh được |
+| Trial | `seeded_regression C-002@11`; report `E-seeded_regression-20261117-7ed0` |
+| Triệu chứng | `trial_pass` fail: agent resolve và ledger ghi 20.000đ, trong khi label yêu cầu denied và 0đ. |
+| Bước sai đầu tiên | Event 3 `model_override`: `{"delay_days": 5}`. |
+| Vì sao là bước *đầu tiên* | Event 1 handoff giới hạn tool; event 2 đọc đúng DB: O-202 có delay 2 ngày. Sai lệch chỉ bắt đầu ở event 3 khi ticket đè giá trị DB. Event 4 quote 20.000đ và event 5 gọi host là hậu quả. |
+| Failure mode | FM-03 `ticket_trust`. |
+| Đối chứng | `fixed C-002@11`: event 3 là quote `no_entitlement` 0đ, không có `model_override`; ledger 0đ và trial PASS. |
+| Regression test | `test_seeded_ticket_override_regression_has_fixed_control`: xác nhận fail trên `seeded_regression`, pass trên `fixed`; metric `pass_rate` chặn biến thể. |
+| Chưa chắc chắn | Trace chứng minh thứ tự event và kết quả của seed này; không khẳng định tần suất lỗi trên model thật hoặc claim khác. |
 
 ## Quy tắc
 

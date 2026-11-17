@@ -57,3 +57,16 @@ def test_check_rejects_missing_tags(tmp_path, evalset_cli):
     result = evalset_cli("--check")
     assert result.returncode == 1, result.stdout + result.stderr
     assert "failure_modes empty" in result.stdout
+
+
+def test_seeded_ticket_override_regression_has_fixed_control():
+    from lab8.shapes import SHAPES
+    from lab9.trace_case import investigate
+
+    original_shapes = set(SHAPES)
+    regressed = investigate("seeded_regression", "C-002", 11)["trial"]
+    fixed = investigate("fixed", "C-002", 11)["trial"]
+    assert regressed["lab8_pass"] is False
+    assert regressed["lab8_reason"] == "status resolved != denied"
+    assert fixed["lab8_pass"] is True
+    assert set(SHAPES) == original_shapes

@@ -31,7 +31,6 @@ EXPECTED = {
 
 
 def scorecard(spec: dict, base: dict, base_spec: dict | None) -> list[tuple[str, str, str, list[str]]]:
-    variants.register()
     out = []
     for name, want in EXPECTED.items():
         blocked, _ = gate.check(run_eval(name, spec), base, spec, base_spec)
@@ -42,7 +41,6 @@ def scorecard(spec: dict, base: dict, base_spec: dict | None) -> list[tuple[str,
 def detect(spec: dict) -> tuple[float, float]:
     """Detection: of the seeded_regression rows that fail pass_rate, the share that at least one of
     your other graders also flags (so you can say *why* it failed). False alarm: share of fixed rows flagged."""
-    variants.register()
     # A `max` threshold counts violations (True = bad); a `min` threshold counts passes (False = bad).
     bad_value = {m["id"]: "max" in (m.get("threshold") or {}) for m in spec["metrics"]
                  if m["id"] in GRADERS and m["id"] != "pass_rate"}
@@ -63,7 +61,6 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--aa", help="comma-separated alternate seeds: print the A/A metric deltas")
     args = ap.parse_args(argv)
     spec = load_spec(Path(args.spec))
-    variants.register()
     if args.detect:
         det, fa = detect(spec)
         ok = det >= 0.80 and fa <= 0.10
